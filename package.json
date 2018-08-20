@@ -1,0 +1,29 @@
+{
+  "name": "stackoverflowlite",
+  "version": "1.0.0",
+  "description": "A light version of stack overflow",
+  "main": "index.js",
+  "scripts": {
+    "test": "jasmine"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/esanolad/stackOverflowLite.git"
+  },
+  "keywords": [
+    "nodejs",
+    "andela"
+  ],
+  "author": "esanolad",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/esanolad/stackOverflowLite/issues"
+  },
+  "homepage": "https://github.com/esanolad/stackOverflowLite#readme",
+  "devDependencies": {
+    "eslint": "^5.4.0",
+    "jasmine": "^3.2.0",
+    "pg": "^7.4.3"
+  },
+  "dependencies": {}
+}
