@@ -70,7 +70,6 @@ v1.route('/questions')
 		let query = 'SELECT * FROM "tblquestion"';
 		pool.query(query, (err, result) => {
 			res.json(result.rows);
-			pool.end();
 		});
 		//console.log('Getting call from question get ',req.body);
 		
@@ -81,10 +80,12 @@ v1.route('/questions')
 	});
 v1.route('/questions/:id')
 	.get((req, res)=>{
-		
-		//console.log(req.params.id);
-		//console.log('Getting call from questionId get ',req.body);
-		//res.send('questionId get');
+		let query = `SELECT * FROM "tblquestion" 
+					WHERE "questionId"= ${req.params.id}`;
+		pool.query(query, (err, result) => {
+			res.json(result.rows);
+			
+		});
 	})
 	.delete((req,res)=>{
 		//console.log('Getting call from questionId delete  ',req.body);
