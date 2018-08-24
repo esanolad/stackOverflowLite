@@ -1,7 +1,7 @@
 const express = require('express');
 const { Pool, Client } = require('pg');
 const bodyParser = require('body-parser');
-const uuidv4 = require('uuid/v4');
+//const uuidv4 = require('uuid/v4');
 const passport=require('passport');
 const bcrypt=require('bcrypt')
 require('dotenv').config();
@@ -28,8 +28,21 @@ const v1 = express.Router();
 v1.use(bodyParser());
 v1.route('/auth/login')
 	.post((req, res)=>{
-		//console.log('Getting call from post ',req.body);
-		res.send('login post');
+		const pass=req.body.password;
+		const username=req.body.username;
+		let query = `SELECT * FROM "tblUser" WHERE username='${username}'`;
+		pool.query(query,(err,result)=>{
+			bcrypt.compare(pass,result.rows[0].password).then((ans)=>{
+				if (ans){
+					res.send('succesful');
+				}
+				else {
+					res.send('failure');
+				}
+			});
+			
+		});
+		
 	});
 v1.route('/auth/signup')
 	.post((req, res)=>{
@@ -37,55 +50,49 @@ v1.route('/auth/signup')
 		const username=req.body.username;
 		let query = `SELECT username FROM "tblUser" WHERE username='${username}'`;
 		pool.query(query, (err, result) => {
-
 			if (result.rows[0]) {
-				console.log(result.rows[0]);
 				res.send('username not available');
 			}
 			else {
-				
 				bcrypt.hash(pass, 5, (err, hash)=> {
 					let query = `INSERT INTO "tblUser"(username, password, "userEmail", "userRole")
 						VALUES ('${username}', '${hash}', '${username}', 'user');`;
 					pool.query(query, (err, res) => {
-						//console.log(err, res);
 						pool.end();
 					});
 				});
 				res.send('user added');
 			}
-			
-			//pool.end();
 		});
 		
 		
 	}); 
 v1.route('/questions')
 	.get((req, res)=>{
-		console.log('Getting call from question get ',req.body);
+		//console.log('Getting call from question get ',req.body);
 		res.send('question get');
 	})
 	.post((req, res)=>{
-		console.log('Getting call from question post ',req.body);
+		//console.log('Getting call from question post ',req.body);
 		res.send('question post');
 	});
 v1.route('/questions/:id')
 	.get((req, res)=>{
-		console.log('Getting call from questionId get ',req.body);
+		//console.log('Getting call from questionId get ',req.body);
 		res.send('questionId get');
 	})
 	.delete((req,res)=>{
-		console.log('Getting call from questionId delete  ',req.body);
+		//console.log('Getting call from questionId delete  ',req.body);
 		res.send('questionId Delete');
 	});
 v1.route('/questions/:id/answers')
 	.post((req,res)=>{
-        console.log('Getting call from questionId delete  ',req.body);
+		//console.log('Getting call from questionId delete  ',req.body);
 		res.send('/questions/:id/answers post');
 	});
 v1.route('/questions/:id/answers:id')
 	.post((req,res)=>{
-        console.log('Getting call from questionId delete  ',req.body);
+		//console.log('Getting call from questionId delete  ',req.body);
 		res.send('/questions/:id/answers:id post');
 	});
 
@@ -99,20 +106,3 @@ app.listen(port, function () {
 	console.log('Server Started, Listening on Port ', port);
     
 }); 
-
-
-function checkUsername(username){
-	let query = `SELECT username from "tblUser" WHERE username='${username}'`;
-	//console.log(pool);
-	pool.query(query, (err, res) => {
-		//console.log(err, res);
-		//pool.end();
-		if (res) {
-			console.log('returning true');
-			return true; 
-		}
-		else {console.log('returning false'); return false;}
-		
-		//pool.end();
-	});
-}
