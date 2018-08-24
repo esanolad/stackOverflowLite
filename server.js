@@ -64,13 +64,16 @@ v1.route('/auth/signup')
 				res.send('user added');
 			}
 		});
-		
-		
 	}); 
 v1.route('/questions')
 	.get((req, res)=>{
+		let query = 'SELECT * FROM "tblquestion"';
+		pool.query(query, (err, result) => {
+			res.json(result.rows);
+			pool.end();
+		});
 		//console.log('Getting call from question get ',req.body);
-		res.send('question get');
+		
 	})
 	.post((req, res)=>{
 		//console.log('Getting call from question post ',req.body);
@@ -78,8 +81,10 @@ v1.route('/questions')
 	});
 v1.route('/questions/:id')
 	.get((req, res)=>{
+		
+		//console.log(req.params.id);
 		//console.log('Getting call from questionId get ',req.body);
-		res.send('questionId get');
+		//res.send('questionId get');
 	})
 	.delete((req,res)=>{
 		//console.log('Getting call from questionId delete  ',req.body);
