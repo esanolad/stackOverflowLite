@@ -3,7 +3,9 @@ const { Pool, Client } = require('pg');
 const bodyParser = require('body-parser');
 //const uuidv4 = require('uuid/v4');
 const passport=require('passport');
-const bcrypt=require('bcrypt')
+const bcrypt=require('bcrypt');
+const jwt = require('jsonwebtoken');
+const morgan=require('morgan');
 require('dotenv').config();
 const app = express();
 
@@ -12,9 +14,10 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(bodyParser());
+app.use(morgan('dev'));
 require('./lib/routes.js');
-//const pp= process.env.PORT;
-//console.log(pp);
+app.set('superSecret','mySecret');
+
 const port = process.env.PORT;
 const pool = new Pool({
 	user: process.env.PGUSER,
@@ -25,6 +28,7 @@ const pool = new Pool({
 });
 
 const v1 = express.Router();
+
 v1.use(bodyParser());
 v1.route('/auth/login')
 	.post((req, res)=>{
@@ -34,8 +38,18 @@ v1.route('/auth/login')
 		pool.query(query,(err,result)=>{
 			bcrypt.compare(pass,result.rows[0].password).then((ans)=>{
 				if (ans){
-					res.send('succesful');
-				}
+					const payload={
+						user:username
+					};
+					//let token=jwt.sign(payload,app.get('superSecret'),{expiresIn:'ih'});
+					let token=jwt.sign(payload, app.get('superSecret'), { expiresIn: '24h' });
+					res.json({
+						success: true,
+						message: 'Enjoy your token!',
+						token: token
+					});
+
+				} 
 				else {
 					res.send('failure');
 				}
@@ -75,7 +89,34 @@ v1.route('/questions')
 		
 	})
 	.post((req, res)=>{
-		//console.log('Getting call from question post ',req.body);
+		const question=req.body.question;
+		const username=req.body.username;
+		let query='SELECT COUNT("questionId") from tblquestion';
+		pool.query(query, (err, result)=>{
+			let count=parseInt(result.rows[0].count)+1;
+			//console.log(count);
+			let check=true;
+			while (check==true){
+				
+				query=`SELECT "questionId" from tblquestion where "questionId"=${count}`;
+				console.log('checking while');
+				pool.query(query,(err,result)=>{
+					
+					if (result.rowCount==0) {
+						check=false;
+						console.log('stopping loop');
+					} else {
+						console.log('Adding 1');
+						count++;
+					}
+				});
+			}
+			
+		});
+		query = `INSERT INTO tblquestion(
+			"questionId", question, rating, answered, "datePosted", username)
+			VALUES (3, '${question}', 0, false, NOW(), '${username}');`;
+		
 		res.send('question post');
 	});
 v1.route('/questions/:id')
@@ -112,3 +153,4 @@ app.listen(port, function () {
 	console.log('Server Started, Listening on Port ', port);
     
 }); 
+
