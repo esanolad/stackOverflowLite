@@ -95,7 +95,8 @@ v1.use(function(req, res, next) {
 				return res.json({ success: false, message: 'Failed to authenticate token.' });    
 			} else {
 				// if everything is good, save to request for use in other routes
-				req.decoded = decoded;    
+				req.decoded = decoded;   
+				console.log(decoded.user);
 				next();
 			}
 		}); 
@@ -119,34 +120,18 @@ v1.route('/questions')
 	})
 	.post((req, res)=>{
 		const question=req.body.question;
-		const username=req.body.username;
-		let query='SELECT COUNT("questionId") from tblquestion';
-		pool.query(query, (err, result)=>{
-			let count=parseInt(result.rows[0].count)+1;
-			//console.log(count);
-			let check=true;
-			while (check==true){
-				
-				query=`SELECT "questionId" from tblquestion where "questionId"=${count}`;
-				console.log('checking while');
-				pool.query(query,(err,result)=>{
-					
-					if (result.rowCount==0) {
-						check=false;
-						console.log('stopping loop');
-					} else {
-						console.log('Adding 1');
-						count++;
-					}
-				});
-			}
-			
+		const username=req.decoded.user;
+		let query = `INSERT INTO tblquestion(
+			question, rating, answered, "datePosted", username)
+			VALUES ('${question}', 0, false, NOW(), '${username}') RETURNING "questionId";`;
+		pool.query(query,(err, result)=>{
+			//console.log(result.rows[0].questionId);
+			res.json({success:true,
+				questionId: result.rows[0].questionId
+			});
 		});
-		query = `INSERT INTO tblquestion(
-			"questionId", question, rating, answered, "datePosted", username)
-			VALUES (3, '${question}', 0, false, NOW(), '${username}');`;
 		
-		res.send('question post');
+		
 	});
 v1.route('/questions/:id')
 	.get((req, res)=>{
