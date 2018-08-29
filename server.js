@@ -16,7 +16,7 @@ app.use(passport.session());
 app.use(bodyParser());
 app.use(morgan('dev'));
 require('./lib/routes.js');
-app.set('superSecret','mySecret');
+app.set('superSecret','stackFlowSecret');
 
 const port = process.env.PORT;
 const pool = new Pool({
@@ -28,6 +28,9 @@ const pool = new Pool({
 });
 
 const v1 = express.Router();
+
+
+  
 
 v1.use(bodyParser());
 v1.route('/auth/login')
@@ -43,12 +46,12 @@ v1.route('/auth/login')
 					};
 					//let token=jwt.sign(payload,app.get('superSecret'),{expiresIn:'ih'});
 					let token=jwt.sign(payload, app.get('superSecret'), { expiresIn: '24h' });
+					
 					res.json({
 						success: true,
 						message: 'Enjoy your token!',
 						token: token
 					});
-
 				} 
 				else {
 					res.send('failure');
@@ -79,13 +82,39 @@ v1.route('/auth/signup')
 			}
 		});
 	}); 
+
+v1.use(function(req, res, next) {
+	// check header or url parameters or post parameters for token
+	let token = req.body.token || req.query.token || req.headers['x-access-token'];
+	// decode token
+	if (token) {
+		// verifies secret and checks exp
+		jwt.verify(token, app.get('superSecret'),(err, decoded)=> {      
+			if (err) {
+				//console.log(err);
+				return res.json({ success: false, message: 'Failed to authenticate token.' });    
+			} else {
+				// if everything is good, save to request for use in other routes
+				req.decoded = decoded;    
+				next();
+			}
+		}); 
+	} else {
+		// if there is no token
+		// return an error
+		return res.status(403).send({ 
+			success: false, 
+			message: 'No token provided.' 
+		});
+	}
+});
 v1.route('/questions')
 	.get((req, res)=>{
 		let query = 'SELECT * FROM "tblquestion"';
 		pool.query(query, (err, result) => {
 			res.json(result.rows);
 		});
-		//console.log('Getting call from question get ',req.body);
+		//console.log('Getting call from question get ',req);
 		
 	})
 	.post((req, res)=>{
