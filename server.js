@@ -174,9 +174,9 @@ v1.route('/questions/:id')
 	});
 v1.route('/questions/:id/answers')
 	.post((req,res)=>{
+		//posts an answer to a question
 		const ans=req.body.answer;
 		const username=req.decoded.user;
-		//posts an answer to a question
 		let query=`INSERT INTO "tblAnswer"(
 			"questionId", "datePosted", answer, preferred, username)
 			VALUES (${req.params.id}, NOW(),'${ans}' ,false, '${username}') 
@@ -207,16 +207,15 @@ v1.route('/questions/:id/answers/:ansId')
 			if (result) {
 				res.json({success:true, result:result.rows});
 			}
-			
 		});
 		//console.log('Getting call from questionId delete  ',req.body);
 		//res.send('/questions/:id/answers:id post');
 	});
-/*
+
 v1.route('/questionAnswers/:id')
-	//selects question by ID
+	//selects all answers of a question ID
 	.get((req, res)=>{
-		let query = `SELECT * FROM "tblquestion" 
+		let query = `SELECT * FROM "tblAnswer" 
 					WHERE "questionId"= ${req.params.id}`;
 		pool.query(query, (err, result) => {
 			if (err) {
@@ -227,8 +226,8 @@ v1.route('/questionAnswers/:id')
 			}
 			
 		});
-	})
-}); */
+	});
+
 app.use('/v1', v1);
 app.use('/', v1); // Set the default version to v1.
 
