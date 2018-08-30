@@ -27,10 +27,7 @@ const pool = new Pool({
 	port: process.env.PGPORT,
 });
 
-const v1 = express.Router();
-
-
-  
+const v1 = express.Router();  
 
 v1.use(bodyParser());
 v1.route('/auth/login')
@@ -96,7 +93,7 @@ v1.use(function(req, res, next) {
 			} else {
 				// if everything is good, save to request for use in other routes
 				req.decoded = decoded;   
-				console.log(decoded.user);
+				//console.log(decoded.user);
 				next();
 			}
 		}); 
@@ -115,7 +112,6 @@ v1.route('/questions')
 		pool.query(query, (err, result) => {
 			res.json(result.rows);
 		});
-		//console.log('Getting call from question get ',req);
 		
 	})
 	.post((req, res)=>{
@@ -126,38 +122,107 @@ v1.route('/questions')
 			VALUES ('${question}', 0, false, NOW(), '${username}') RETURNING "questionId";`;
 		pool.query(query,(err, result)=>{
 			//console.log(result.rows[0].questionId);
-			res.json({success:true,
-				questionId: result.rows[0].questionId
-			});
+			if (err) {
+				res.json({success:false, reason: err});
+			} 
+			if (result) {
+				res.json({success:true,
+					questionId: result.rows[0].questionId
+				});
+			} 
+			
 		});
 		
 		
 	});
 v1.route('/questions/:id')
+	//selects question by ID
 	.get((req, res)=>{
 		let query = `SELECT * FROM "tblquestion" 
 					WHERE "questionId"= ${req.params.id}`;
 		pool.query(query, (err, result) => {
-			res.json(result.rows);
+			if (err) {
+				res.json({success:false, reason: err});
+			} 
+			if (result) {
+				res.json({success:true, result:result.rows});
+			}
 			
 		});
 	})
 	.delete((req,res)=>{
-		//console.log('Getting call from questionId delete  ',req.body);
-		res.send('questionId Delete');
+		//Deletes question by ID
+		let query = `DELETE FROM "tblquestion" 
+					WHERE "questionId"= ${req.params.id} RETURNING "questionId"`;
+		pool.query(query, (err, result) => {
+			if (err) {
+				res.json({success:false, reason: err});
+			} 
+			if (result.rows[0]) {
+				res.json({success:true, result:result.rows[0]});
+			} else {
+				res.json({success:false, reason: 'Question ID not found'});
+			}
+		});
+		
 	});
 v1.route('/questions/:id/answers')
 	.post((req,res)=>{
-		//console.log('Getting call from questionId delete  ',req.body);
-		res.send('/questions/:id/answers post');
+		const ans=req.body.answer;
+		const username=req.decoded.user;
+		//posts an answer to a question
+		let query=`INSERT INTO "tblAnswer"(
+			"questionId", "datePosted", answer, preferred, username)
+			VALUES (${req.params.id}, NOW(),'${ans}' ,false, '${username}') 
+			RETURNING "answerId";`;
+		pool.query(query, (err, result) => {
+			if (err) {
+				res.json({success:false, reason: err});
+			} else
+			if (result.rows[0]) {
+				res.json({success:true, result:result.rows[0]});
+			} else {
+				res.json({success:false, reason: 'err'});
+			}
+		});
 	});
-v1.route('/questions/:id/answers:id')
-	.post((req,res)=>{
+v1.route('/questions/:id/answers/:ansId')
+//Mark an answer as accepted or update an answer.
+	.put((req,res)=>{
+		const answerId=req.params.ansId
+		console.log(req.params);
+		let query=`UPDATE "tblAnswer"
+			SET preferred=true
+			WHERE "answerId"= ${answerId} RETURNING "answerId";`;
+		pool.query(query, (err, result) => {
+			if (err) {
+				res.json({success:false, reason: err});
+			} 
+			if (result) {
+				res.json({success:true, result:result.rows});
+			}
+			
+		});
 		//console.log('Getting call from questionId delete  ',req.body);
-		res.send('/questions/:id/answers:id post');
+		//res.send('/questions/:id/answers:id post');
 	});
-
-
+/*
+v1.route('/questionAnswers/:id')
+	//selects question by ID
+	.get((req, res)=>{
+		let query = `SELECT * FROM "tblquestion" 
+					WHERE "questionId"= ${req.params.id}`;
+		pool.query(query, (err, result) => {
+			if (err) {
+				res.json({success:false, reason: err});
+			} 
+			if (result) {
+				res.json({success:true, result:result.rows});
+			}
+			
+		});
+	})
+}); */
 app.use('/v1', v1);
 app.use('/', v1); // Set the default version to v1.
 
