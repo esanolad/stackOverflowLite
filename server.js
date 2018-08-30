@@ -1,5 +1,5 @@
 const express = require('express');
-const { Pool, Client } = require('pg');
+const { Pool} = require('pg');
 const bodyParser = require('body-parser');
 //const uuidv4 = require('uuid/v4');
 const passport=require('passport');
@@ -70,12 +70,18 @@ v1.route('/auth/signup')
 			else {
 				bcrypt.hash(pass, 5, (err, hash)=> {
 					let query = `INSERT INTO "tblUser"(username, password, "userEmail", "userRole")
-						VALUES ('${username}', '${hash}', '${username}', 'user');`;
-					pool.query(query, (err, res) => {
+						VALUES ('${username}', '${hash}', '${username}', 'user') RETURNING "usesrname";`;
+					pool.query(query, (err, result) => {
+						if (err){
+							res.json({success:false, reason:err});
+						}
+						if (result){
+							res.json({success:true, result:result});
+						}
 						pool.end();
 					});
 				});
-				res.send('user added');
+				//res.send('user added');
 			}
 		});
 	}); 
@@ -189,8 +195,8 @@ v1.route('/questions/:id/answers')
 v1.route('/questions/:id/answers/:ansId')
 //Mark an answer as accepted or update an answer.
 	.put((req,res)=>{
-		const answerId=req.params.ansId
-		console.log(req.params);
+		const answerId=req.params.ansId;
+		//console.log(req.params);
 		let query=`UPDATE "tblAnswer"
 			SET preferred=true
 			WHERE "answerId"= ${answerId} RETURNING "answerId";`;
@@ -229,7 +235,7 @@ app.use('/', v1); // Set the default version to v1.
 
 
 app.listen(port, function () {
-	console.log('Server Started, Listening on Port ', port);
+	//console.log('Server Started, Listening on Port ', port);
     
 }); 
 
