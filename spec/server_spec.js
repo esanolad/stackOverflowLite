@@ -1,17 +1,23 @@
 const request=require('request');
-const serve=require('../server.js');
+
 require('dotenv').config();
 const port = process.env.PORT;
-const base_url = `http://localhost:8000/v1/`;
+const base_url = `http://localhost:${port}/v1/`;
 describe('server',()=>{
+	beforeAll(() => {
+		server = require('../server.js');
+	});
+	afterAll(() => {
+		server.close();
+	});
 	describe ('POST /auth/login',()=>{
 		it('returns status code 200', (done)=>{
 			request.post(base_url+'auth/login', (err, res, body)=>{
-				expect(res.statusCode).toBe(200);
+				expect(res).toBe(200);
 				done();
 			});
 		});
-        /*
+		/*
 		it('returns body of success or failure', (done)=>{
 			request.post(base_url+'auth/login', (err, res, body)=>{
 				expect(body).toBe('{"success":false,"reason":"username or password incorrect"}');
@@ -22,11 +28,11 @@ describe('server',()=>{
 	describe ('POST /auth/signup',()=>{
 		it('returns status code 200', (done)=>{
 			request.post(base_url+'auth/signup', (err, res, body)=>{
-				expect(res.statusCode).toBe(200);
+				expect(res).toBe(200);
 				done();
 			});
 		});
-        /*
+		/*
 		it('returns status code 200', (done)=>{
 			request.post(base_url+'auth/signup', (err, res, body)=>{
 				expect(body).toBe('');
@@ -34,7 +40,7 @@ describe('server',()=>{
 			});
 		}); */
 	});
-    /*
+	/*
 	describe ('GET /questions',()=>{
 		it('returns status code 200', (done)=>{
 			request.post(base_url+'questions', (err, res, body)=>{

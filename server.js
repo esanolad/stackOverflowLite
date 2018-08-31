@@ -240,7 +240,7 @@ v1.route('/questionAnswers/:id')
 app.use('/v1', v1);
 app.use('/', v1); // Set the default version to v1.
 
-exports.closeServer=function(){
+exports.close=function(){
 	serve.close();
 };
 
