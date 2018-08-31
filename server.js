@@ -36,24 +36,33 @@ v1.route('/auth/login')
 		const username=req.body.username;
 		let query = `SELECT * FROM "tblUser" WHERE username='${username}'`;
 		pool.query(query,(err,result)=>{
-			bcrypt.compare(pass,result.rows[0].password).then((ans)=>{
-				if (ans){
-					const payload={
-						user:username
-					};
-					//let token=jwt.sign(payload,app.get('superSecret'),{expiresIn:'ih'});
-					let token=jwt.sign(payload, app.get('superSecret'), { expiresIn: '24h' });
-					
-					res.json({
-						success: true,
-						message: 'Enjoy your token!',
-						token: token
-					});
-				} 
-				else {
-					res.send('failure');
-				}
-			});
+			if (err){
+				res.json({success:false, reason: err});
+			} else if (result.rows[0]){
+				bcrypt.compare(pass,result.rows[0].password).then((ans)=>{
+					if (ans){
+						const payload={
+							user:username
+						};
+						//let token=jwt.sign(payload,app.get('superSecret'),{expiresIn:'ih'});
+						let token=jwt.sign(payload, app.get('superSecret'), { expiresIn: '24h' });
+						
+						res.json({
+							success: true,
+							message: 'Enjoy your token!',
+							token: token
+						});
+					} 
+					else {
+						res.json({success:false, reason: 'username or password incorrect'});
+						//console.log(res);
+					}
+				});
+			} else{
+				res.json({success:false, reason: 'username or password incorrect'});
+				//console.log(res);
+			}
+
 			
 		});
 		
@@ -231,9 +240,11 @@ v1.route('/questionAnswers/:id')
 app.use('/v1', v1);
 app.use('/', v1); // Set the default version to v1.
 
+exports.closeServer=function(){
+	serve.close();
+};
 
-
-app.listen(port, function () {
+const serve=app.listen(port, function () {
 	//console.log('Server Started, Listening on Port ', port);
     
 }); 
