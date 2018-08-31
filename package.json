@@ -21,23 +21,22 @@
   },
   "homepage": "https://github.com/esanolad/stackOverflowLite#readme",
   "devDependencies": {
-    
     "eslint": "^5.4.0",
     "jasmine": "^3.2.0",
     "jasmine-node": "^1.15.0",
     "morgan": "^1.9.0"
-    
   },
   "dependencies": {
     "bcrypt": "^3.0.0",
-    "express": "^4.16.3",
-    "pg": "^7.4.3",
-    "body-parser": "^1.18.3",
+    "bcrypt-nodejs": "0.0.3",
     "bcryptjs": "^2.4.3",
+    "body-parser": "^1.18.3",
     "dotenv": "^6.0.0",
+    "express": "^4.16.3",
     "jsonwebtoken": "^8.3.0",
     "passport": "^0.4.0",
     "passport-local": "^1.0.0",
+    "pg": "^7.4.3",
     "request": "^2.88.0",
     "uuid": "^3.3.2",
     "uuidv4": "^1.0.1"

@@ -3,7 +3,7 @@ const { Pool} = require('pg');
 const bodyParser = require('body-parser');
 //const uuidv4 = require('uuid/v4');
 const passport=require('passport');
-const bcrypt=require('bcrypt');
+const bcrypt=require('bcrypt-nodejs');
 const jwt = require('jsonwebtoken');
 const morgan=require('morgan');
 require('dotenv').config();
@@ -39,7 +39,7 @@ v1.route('/auth/login')
 			if (err){
 				res.json({success:false, reason: err});
 			} else if (result.rows[0]){
-				bcrypt.compare(pass,result.rows[0].password).then((ans)=>{
+				bcrypt.compare(pass,result.rows[0].password,(ans)=>{
 					if (ans){
 						const payload={
 							user:username
@@ -77,7 +77,7 @@ v1.route('/auth/signup')
 				res.send('username not available');
 			}
 			else {
-				bcrypt.hash(pass, 5, (err, hash)=> {
+				bcrypt.hash(pass, 5, null, (err, hash)=> {
 					let query = `INSERT INTO "tblUser"(username, password, "userEmail", "userRole")
 						VALUES ('${username}', '${hash}', '${username}', 'user') RETURNING "usesrname";`;
 					pool.query(query, (err, result) => {
