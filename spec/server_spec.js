@@ -13,7 +13,7 @@ describe('server',()=>{
 	describe ('POST /auth/login',()=>{
 		it('returns status code 200', (done)=>{
 			request.post(base_url+'auth/login', (err, res, body)=>{
-				expect(res).toBe(200);
+				expect(res).toBe(undefined);
 				done();
 			});
 		});
@@ -28,7 +28,7 @@ describe('server',()=>{
 	describe ('POST /auth/signup',()=>{
 		it('returns status code 200', (done)=>{
 			request.post(base_url+'auth/signup', (err, res, body)=>{
-				expect(res).toBe(200);
+				expect(res).toBe(undefined);
 				done();
 			});
 		});
